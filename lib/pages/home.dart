@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:custom_switch/custom_switch.dart';
 import 'package:loading/indicator/ball_pulse_indicator.dart';
+import 'package:loading/indicator/ball_scale_indicator.dart';
 import 'package:loading/loading.dart';
 
 class Home extends StatefulWidget {
