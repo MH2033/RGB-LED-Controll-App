@@ -1,4 +1,6 @@
+import 'dart:convert';
 
+import 'package:http/http.dart' as http;
 import 'package:espled/pages/loading.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,12 +10,16 @@ import 'package:loading/indicator/ball_scale_indicator.dart';
 import 'package:loading/loading.dart';
 
 class Home extends StatefulWidget {
+
+  final String ip;
+  Home({this.ip});
   @override
   _HomeState createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
 
+  int portNumber = 5436;
   bool isLoading = false;
   IconData icon = Icons.flash_off;
   bool state = false;
@@ -59,12 +65,19 @@ class _HomeState extends State<Home> {
                           setState(() {
                             state = value;
                             icon = state ? Icons.flash_on : Icons.flash_off;
-                            Future.delayed(Duration(seconds: 2)).then((onValue) {
+                            var url = "http://" + widget.ip + ":" + portNumber.toString() + "/led";
+                            Map data = {
+                              'led': state?'on':'off'
+                            };
+                            //encode Map to JSON
+                            var body = json.encode(data);
+                            var response = http.post(url, body: body).then((onValue) {
                               setState(() {
                                 isLoading = false;
                               });
 
                             });
+
                             isLoading = true;
                           });
                         },
