@@ -8,9 +8,9 @@ import 'package:custom_switch/custom_switch.dart';
 import 'package:loading/indicator/ball_pulse_indicator.dart';
 import 'package:loading/indicator/ball_scale_indicator.dart';
 import 'package:loading/loading.dart';
+import 'package:sleek_circular_slider/sleek_circular_slider.dart';
 
 class Home extends StatefulWidget {
-
   final String ip;
   Home({this.ip});
   @override
@@ -18,11 +18,12 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-
   int portNumber = 5436;
   bool isLoading = false;
   IconData icon = Icons.flash_off;
   bool state = false;
+  String dropdownValue = "off";
+  int intensity = 0;
 
   void changeState() {
     setState(() {});
@@ -30,75 +31,81 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    var address = "http://" + widget.ip + ":" + portNumber.toString() + "/led";
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.tealAccent[700],
+        elevation: 0,
+        backgroundColor: Colors.indigoAccent,
         title: Text('LED Controller'),
         centerTitle: true,
       ),
       body: Center(
-        child: Stack(
-          children: <Widget>[
-            Opacity(
-              opacity: isLoading? 0.4: 1,
-              child: Container(
-                alignment: Alignment.center,
-                child: Column(
-                  //mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    SizedBox(
-                      height: 120,
-                    ),
-                    Icon(
-                      icon,
-                      size: 150,
-                    ),
-                    SizedBox(
-                      height: 50,
-                    ),
-                    Transform.scale(
-                      scale: 2.5,
-                      child: CupertinoSwitch(
-                        activeColor: Colors.greenAccent[700],
-                        value: state,
-                        onChanged: isLoading? null:(value) {
-                          setState(() {
-                            state = value;
-                            icon = state ? Icons.flash_on : Icons.flash_off;
-                            var url = "http://" + widget.ip + ":" + portNumber.toString() + "/led";
-                            Map data = {
-                              'led': state?'on':'off'
-                            };
-                            //encode Map to JSON
-                            var body = json.encode(data);
-                            var response = http.post(url, body: body).then((onValue) {
-                              setState(() {
-                                isLoading = false;
-                              });
-
-                            });
-
-                            isLoading = true;
-                          });
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.indigoAccent, Colors.cyan[100]],
             ),
-            Center(
-              child: Visibility(
-                visible: isLoading,
-                child: Loading(
-                  indicator: BallPulseIndicator(),
-                  size: 100,
-                  color: Colors.tealAccent[700],
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                SleekCircularSlider(
+                  appearance: CircularSliderAppearance(
+                    customColors: CustomSliderColors(
+                      progressBarColors: [
+                        Colors.redAccent,
+                        Colors.indigoAccent
+                      ],
+                    ),
+                  ),
+                  onChangeEnd: (double value) {
+                    intensity = value * 255 ~/ 100;
+                    print(intensity);
+                    var body = jsonEncode(
+                        {'intensity': intensity.toString()});
+                    http.post(address, body: body);
+                  },
                 ),
-              ),
+                SizedBox(height: 30),
+                Text(
+                  "LED Color",
+                  style: TextStyle(
+                    fontSize: 16,
+                  ),
+                ),
+                SizedBox(height: 10),
+                DropdownButton<String>(
+                  value: dropdownValue,
+                  icon: Icon(Icons.arrow_downward),
+                  iconSize: 24,
+                  elevation: 16,
+                  style: TextStyle(color: Colors.black,fontSize: 14),
+                  underline: Container(
+                    height: 5,
+                    color: Colors.deepPurpleAccent,
+                  ),
+                  onChanged: (String newValue) {
+                    setState(() {
+                      dropdownValue = newValue;
+                      var body = jsonEncode(
+                          {'led': dropdownValue});
+                      http.post(address, body: body);
+                    });
+                  },
+                  items: <String>['off', 'red', 'green', 'blue']
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
+              ],
             ),
-
-          ],
+          ),
         ),
       ),
     );

@@ -13,8 +13,11 @@ class InitialLoading extends StatefulWidget {
 }
 
 class _InitialLoadingState extends State<InitialLoading> {
+
+  Future result;
+
   Future connectToDevice() async {
-    for (int i = 0; i < 256; i++) {
+    for (int i = 0; i < 20; i++) {
       var result = await TCPScanner("192.168.1." + i.toString(), [5436]).scan();
       print(result.host);
       if (result.open.contains(5436)) {
@@ -25,9 +28,15 @@ class _InitialLoadingState extends State<InitialLoading> {
   }
 
   @override
+  void initState() {
+    result = connectToDevice();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: connectToDevice(),
+        future: result,
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.waiting:
