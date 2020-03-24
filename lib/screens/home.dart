@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:espled/pages/loading.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:custom_switch/custom_switch.dart';
@@ -63,7 +62,7 @@ class _HomeState extends State<Home> {
                   ),
                   onChangeEnd: (double value) {
                     intensity = value * 255 ~/ 100;
-                    print(intensity);
+                    //print(intensity);
                     var body = jsonEncode(
                         {'intensity': intensity.toString()});
                     http.post(address, body: body);
